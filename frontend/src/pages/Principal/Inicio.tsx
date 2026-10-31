@@ -7,10 +7,12 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { categoryService } from "@/services/categoryService";
 import { IconTile } from "@/components/IconTile";
 import { AuthContext } from "@/contexts/Auth/AuthContext";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 
 export function Inicio() {
   const [categories, setCategories] = useState<any[]>([]);
   const auth = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const saudacao = "Olá, " + auth.user?.name + "! Do que você precisa hoje?";
   const localizacao = `${auth.user?.neighborhood}, ${auth.user?.city}`;
@@ -40,7 +42,9 @@ export function Inicio() {
             backgrundColor="#DDEEE3"
             titulo="Preciso de uma mãozinha"
             subtitulo="Publique um serviço com valor, data e bairro. Quem puder ajudar demonstra interesse."
+            onClick={() => navigate("/criar")}
           />
+
           <ButtonBox
             iconLeft={MdFrontHand}
             iconRight={MdArrowForward}
@@ -49,6 +53,7 @@ export function Inicio() {
             backgrundColor="#F5ECD2"
             titulo="Quero dar uma mãozinha"
             subtitulo="Veja serviços perto de você e demonstre interesse no valor anunciado."
+            onClick={() => navigate("/explorar")}
           />
         </Flex>
         <Flex>

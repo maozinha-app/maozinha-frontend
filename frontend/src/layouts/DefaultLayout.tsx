@@ -44,7 +44,7 @@ export function DefaultLayout({
             )}
           </HStack>
 
-          <Heading size="4xl" fontWeight="extrabold">
+          <Heading size={{ base: "2xl", lg: "4xl" }} fontWeight="extrabold">
             {titulo}
           </Heading>
 

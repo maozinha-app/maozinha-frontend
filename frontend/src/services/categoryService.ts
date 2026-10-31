@@ -1,16 +1,16 @@
 import type { ElementType } from "react";
-import {
-  MdHome,
-  MdComputer,
-  MdGrass,
-  MdCleaningServices,
-  MdBuild,
-  MdLocalShipping,
-  MdPets,
-  MdCameraAlt,
-} from "react-icons/md";
 
 import { api } from "./api";
+import {
+  LuArmchair,
+  LuCamera,
+  LuLaptop,
+  LuPawPrint,
+  LuSprayCan,
+  LuSprout,
+  LuTruck,
+  LuWrench,
+} from "react-icons/lu";
 
 export interface IServiceCategory {
   id: number;
@@ -30,113 +30,46 @@ const estilosCategorias: Record<
   Pick<IServiceCategory, "icon" | "bgColor" | "iconColor">
 > = {
   1: {
-    icon: MdHome,
-    bgColor: "#FBEBD9",
-    iconColor: "#7A4A12",
+    icon: LuArmchair,
+    bgColor: "#FBE9D5",
+    iconColor: "#B8631B",
   },
   2: {
-    icon: MdComputer,
-    bgColor: "#E3ECFB",
-    iconColor: "#7A4A12",
+    icon: LuLaptop,
+    bgColor: "#E1EBFB",
+    iconColor: "#2F5FB3",
   },
   3: {
-    icon: MdGrass,
-    bgColor: "#E2F2E3",
-    iconColor: "#7A4A12",
+    icon: LuSprout,
+    bgColor: "#DDEEE3",
+    iconColor: "#1F7A50",
   },
   4: {
-    icon: MdCleaningServices,
-    bgColor: "#DDF1F3",
-    iconColor: "#7A4A12",
+    icon: LuSprayCan,
+    bgColor: "#D9F0F2",
+    iconColor: "#1F7F8C",
   },
   5: {
-    icon: MdBuild,
-    bgColor: "#FBE6DE",
-    iconColor: "#7A4A12",
+    icon: LuWrench,
+    bgColor: "#FBE3DD",
+    iconColor: "#C2452B",
   },
   6: {
-    icon: MdLocalShipping,
-    bgColor: "#ECE6F8",
-    iconColor: "#7A4A12",
+    icon: LuTruck,
+    bgColor: "#E9E2F8",
+    iconColor: "#6B4DC0",
   },
   7: {
-    icon: MdPets,
-    bgColor: "#F9E4EA",
-    iconColor: "#7A4A12",
+    icon: LuPawPrint,
+    bgColor: "#FADDE6",
+    iconColor: "#B02C58",
   },
   8: {
-    icon: MdCameraAlt,
-    bgColor: "#F6EFD2",
-    iconColor: "#7A4A12",
+    icon: LuCamera,
+    bgColor: "#F7EFCB",
+    iconColor: "#8A6D0B",
   },
 };
-
-// DEIXEI AQUI COMO BACKUP PARA TESTES SEM O BACKEND OU BD
-// const mockCategorias: IServiceCategory[] = [
-//   {
-//     id: 1,
-//     name: "Casa e montagem",
-//     icon: MdHome,
-//     bgColor: "#FBEBD9",
-//     iconColor: "#7A4A12",
-//   },
-//   {
-//     id: 2,
-//     name: "Tecnologia",
-//     icon: MdComputer,
-//     bgColor: "#E3ECFB",
-//     iconColor: "#7A4A12",
-//   },
-//   {
-//     id: 3,
-//     name: "Jardinagem",
-//     icon: MdGrass,
-//     bgColor: "#E2F2E3",
-//     iconColor: "#7A4A12",
-//   },
-//   {
-//     id: 4,
-//     name: "Limpeza",
-//     icon: MdCleaningServices,
-//     bgColor: "#DDF1F3",
-//     iconColor: "#7A4A12",
-//   },
-//   {
-//     id: 5,
-//     name: "Pequenos reparos",
-//     icon: MdBuild,
-//     bgColor: "#FBE6DE",
-//     iconColor: "#7A4A12",
-//   },
-//   {
-//     id: 6,
-//     name: "Mudanças",
-//     icon: MdLocalShipping,
-//     bgColor: "#ECE6F8",
-//     iconColor: "#7A4A12",
-//   },
-//   {
-//     id: 7,
-//     name: "Cuidados com animais",
-//     icon: MdPets,
-//     bgColor: "#F9E4EA",
-//     iconColor: "#7A4A12",
-//   },
-//   {
-//     id: 8,
-//     name: "Eventos e fotografia",
-//     icon: MdCameraAlt,
-//     bgColor: "#F6EFD2",
-//     iconColor: "#7A4A12",
-//   },
-// ];
-
-// DEIXEI AQUI COMO BACKUP PARA TESTES SEM O BACKEND OU BD
-//export const categoryService = {
-  //getCategories: async (): Promise<IServiceCategory[]> => {
-    //return mockCategorias;
-  //},
-//};
 
 export const categoryService = {
   getCategories: async (): Promise<IServiceCategory[]> => {

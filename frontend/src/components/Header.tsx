@@ -121,6 +121,7 @@ export function Header() {
               background="#1F7A50"
               fontSize="15px"
               fontWeight="bold"
+              onClick={() => navigate("/criar")}
             >
               + Publicar serviço
             </Button>

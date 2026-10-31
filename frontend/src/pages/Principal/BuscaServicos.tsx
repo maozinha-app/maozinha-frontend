@@ -1,10 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
-import { Badge, Box, Button,Flex, Heading, HStack, Input, SimpleGrid, Text, VStack, } from "@chakra-ui/react";
-import { MdCalendarToday, MdLocationOn, MdSearch, MdTune, MdStar, MdGridView,} from "react-icons/md";
+import {
+  Box,
+  Button,
+  Flex,
+  Heading,
+  HStack,
+  Input,
+  SimpleGrid,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
+import { MdSearch, MdTune, MdGridView } from "react-icons/md";
 
 import { DefaultLayout } from "../../layouts/DefaultLayout";
+import { CardAd } from "@/components/CardAd";
 
-import { categoryService, type IServiceCategory, } from "../../services/categoryService";
+import {
+  categoryService,
+  type IServiceCategory,
+} from "../../services/categoryService";
 import { serviceService, type IServico } from "../../services/serviceService";
 
 type Ordenacao = "recentes" | "maior-preco" | "menor-preco" | "mais-proximo";
@@ -103,26 +117,6 @@ export function BuscaServicos() {
     bairroSelecionado,
     ordenacao,
   ]);
-
-  function formataValor(valor: number): string {
-    return valor.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  }
-
-  function formataData(data: string): string {
-    const [ano, mes, dia] = data.split("-").map(Number);
-
-    return new Date(ano, mes - 1, dia)
-      .toLocaleDateString("pt-BR", {
-        weekday: "short",
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
-      .replace(".", "");
-  }
 
   return (
     <DefaultLayout
@@ -322,131 +316,20 @@ export function BuscaServicos() {
           </Box>
         ) : (
           <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={4}>
-            {servicosFiltrados.map((servico) => {
-              const categoria = categorias.find(
-                (item) => item.id === servico.categoriaId,
-              );
-
-              return (
-                <Box
-                  key={servico.id}
-                  bg="white"
-                  border="1px solid"
-                  borderColor="gray.200"
-                  borderRadius="2xl"
-                  p={4}
-                  boxShadow="0 5px 16px rgba(24, 39, 30, 0.05)"
-                  display="flex"
-                  flexDirection="column"
-                  gap={3}
-                  minW={0}
-                  transition="transform 0.2s, box-shadow 0.2s"
-                  _hover={{
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 8px 22px rgba(24, 39, 30, 0.09)",
-                  }}
-                >
-                  {/* Categoria */}
-                  <HStack justify="space-between" align="start">
-                    <Badge
-                      borderRadius="full"
-                      px={2.5}
-                      py={1}
-                      bg={categoria?.bgColor ?? "#E8ECE8"}
-                      color="#37463B"
-                      whiteSpace="normal"
-                    >
-                      {categoria?.name ?? "Outros"}
-                    </Badge>
-                  </HStack>
-
-                  {/* Título e valor */}
-                  <Box>
-                    <Heading
-                      size="md"
-                      fontWeight="semibold"
-                      lineHeight="1.4"
-                      minH={{ base: "auto", md: "48px" }}
-                      mb={2}
-                    >
-                      {servico.titulo}
-                    </Heading>
-
-                    <Text color="#185B3E" fontSize="2xl" fontWeight="bold">
-                      {formataValor(servico.valor)}
-                    </Text>
-                  </Box>
-
-                  {/* Data e localização */}
-                  <VStack align="stretch" gap={1} color="#58665D">
-                    <HStack gap={2} align="start">
-                      <Box mt="3px" flexShrink={0}>
-                        <MdCalendarToday size={16} />
-                      </Box>
-
-                      <Text fontSize="sm">
-                        {formataData(servico.dataServicoPostado)}
-                      </Text>
-                    </HStack>
-
-                    <HStack gap={2} align="start">
-                      <Box mt="3px" flexShrink={0}>
-                        <MdLocationOn size={17} />
-                      </Box>
-
-                      <Text fontSize="sm">
-                        {servico.bairro}, {servico.cidade} - MA
-                      </Text>
-                    </HStack>
-                  </VStack>
-
-                  {/* Prestador */}
-                  <Flex
-                    mt="auto"
-                    pt={3}
-                    borderTop="1px solid"
-                    borderColor="gray.100"
-                    align="center"
-                    justify="space-between"
-                    gap={2}
-                  >
-                    <HStack gap={2} minW={0}>
-                      <Flex
-                        w="32px"
-                        h="32px"
-                        flexShrink={0}
-                        borderRadius="lg"
-                        bg="#DCECE2"
-                        color="#20583D"
-                        align="center"
-                        justify="center"
-                        fontSize="xs"
-                        fontWeight="bold"
-                      >
-                        {servico.nomeUsuario
-                          .split(" ")
-                          .slice(0, 2)
-                          .map((parte) => parte[0])
-                          .join("")
-                          .toUpperCase()}
-                      </Flex>
-
-                      <Text fontSize="sm" fontWeight="medium" truncate>
-                        {servico.nomeUsuario}
-                      </Text>
-                    </HStack>
-
-                    <HStack gap={1} flexShrink={0}>
-                      <MdStar color="#E9A008" size={17} />
-
-                      <Text fontSize="sm" fontWeight="semibold">
-                        —
-                      </Text>
-                    </HStack>
-                  </Flex>
-                </Box>
-              );
-            })}
+            {servicosFiltrados.map((servico) => (
+              <CardAd
+                key={servico.id}
+                titulo={servico.titulo}
+                valor={servico.valor}
+                data={servico.dataServicoPostado}
+                bairro={servico.bairro}
+                cidade={servico.cidade}
+                categoria={categorias.find(
+                  (item) => item.id === servico.categoriaId,
+                )}
+                nomeUsuario={servico.nomeUsuario}
+              />
+            ))}
           </SimpleGrid>
         )}
       </VStack>
