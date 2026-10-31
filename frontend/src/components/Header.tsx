@@ -64,7 +64,14 @@ export function Header() {
 
   return (
     <>
-      <Box p="5" backgroundColor="#f3f4f19e">
+      <Box
+        p="5"
+        backgroundColor="#f3f4f19e"
+        position="sticky"
+        top="0"
+        zIndex="docked"
+        backdropFilter="blur(8px)"
+      >
         <Container
           maxW="1200px"
           mx="auto"

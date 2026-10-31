@@ -1,4 +1,4 @@
-import { Flex, Text, Wrap } from "@chakra-ui/react";
+import { Box, Flex, HStack, Text, Wrap } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
 import { DefaultLayout } from "../../layouts/DefaultLayout";
 import { ButtonBox } from "@/components/ButtonBox";
@@ -7,7 +7,6 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { categoryService } from "@/services/categoryService";
 import { IconTile } from "@/components/IconTile";
 import { AuthContext } from "@/contexts/Auth/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 export function Inicio() {
   const [categories, setCategories] = useState<any[]>([]);
@@ -15,8 +14,6 @@ export function Inicio() {
 
   const saudacao = "Olá, " + auth.user?.name + "! Do que você precisa hoje?";
   const localizacao = `${auth.user?.neighborhood}, ${auth.user?.city}`;
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -29,7 +26,7 @@ export function Inicio() {
 
   return (
     <DefaultLayout titulo={saudacao} subtituloSuperior={localizacao}>
-      <Flex gap={8} justifyContent="space-between" direction="column">
+      <Flex gap={8} justifyContent="space-between" direction="column" pb="80px">
         <Flex
           gap="4"
           justifyContent="space-between"
@@ -43,7 +40,6 @@ export function Inicio() {
             backgrundColor="#DDEEE3"
             titulo="Preciso de uma mãozinha"
             subtitulo="Publique um serviço com valor, data e bairro. Quem puder ajudar demonstra interesse."
-            onClick={() => navigate("/criar")}
           />
           <ButtonBox
             iconLeft={MdFrontHand}
@@ -52,7 +48,7 @@ export function Inicio() {
             iconColorFillRight="#ffffff"
             backgrundColor="#F5ECD2"
             titulo="Quero dar uma mãozinha"
-            subtitulo="Veja serviços perto de você e escolha, dentre os serviços anunciados, aqueles para os quais pode dar uma mãozinha."
+            subtitulo="Veja serviços perto de você e demonstre interesse no valor anunciado."
           />
         </Flex>
         <Flex>
@@ -63,19 +59,30 @@ export function Inicio() {
           />
         </Flex>
 
-        <Flex flexDir="column" gap={10} align="start">
+        <Flex flexDir="column" gap={5} align="start">
           <SectionHeader titulo="Categorias" />
-          <Flex
-            flexDirection="column"
-            justifyContent="space-between"
-            maxW="100%"
+          <Box
+            w="100%"
+            py={0}
+            overflow="auto"
+            css={{
+              "&::-webkit-scrollbar": {
+                display: "none",
+              },
+              scrollbarWidth: "none",
+              "-webkit-overflow-scrolling": "touch",
+            }}
           >
-            {/** scroll view na horizontal */}
-            <Wrap gap={["12px", "24px"]} justify={["center", "flex-start"]}>
+            <HStack
+              gap={4}
+              minW="max-content"
+              px={4}
+              justifyContent="flex-start"
+            >
               {categories.map((category) => {
                 const IconComponent = category.icon;
                 return (
-                  <Flex flexDir="column" align="center" gap={2.5}>
+                  <Box justifyItems="center" gap={2.5} p={3}>
                     <IconTile
                       key={category.id ?? category.name}
                       icone={IconComponent}
@@ -83,16 +90,16 @@ export function Inicio() {
                       backgroundColor={category.bgColor}
                       ring={true}
                       borderRadius="50%"
-                      size="70px"
+                      size="85px"
                     />
                     <Text fontSize="13px" textAlign="center" color="#2A332E">
                       {category.name}
                     </Text>
-                  </Flex>
+                  </Box>
                 );
               })}
-            </Wrap>
-          </Flex>
+            </HStack>
+          </Box>
         </Flex>
 
         <Flex flexDir="column" gap={10}>
