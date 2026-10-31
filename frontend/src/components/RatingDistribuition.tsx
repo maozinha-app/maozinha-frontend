@@ -1,5 +1,4 @@
-import { HStack, Text, VStack, Box } from "@chakra-ui/react";
-import { Loading } from "./Loading";
+import { HStack, Text, VStack, Box, Spinner } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/contexts/Auth/AuthContext";
 import { getReviewsUser } from "@/services/reviewService";
@@ -36,9 +35,14 @@ const RatingRow = ({ star, value, max }: RatingRowProps) => {
   );
 };
 
-export const RatingDistribution = () => {
+interface IRatingDistributionProps {
+  /** Usuário avaliado. Sem isso, usa o usuário logado. */
+  userId?: number;
+}
+
+export const RatingDistribution = ({ userId }: IRatingDistributionProps) => {
   const auth = useContext(AuthContext);
-  const userId = Number(auth.user?.id);
+  const targetId = userId ?? Number(auth.user?.id);
 
   const [ratings, setRatings] = useState([
     { star: 5, value: 0 },
@@ -50,33 +54,24 @@ export const RatingDistribution = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!targetId) return;
 
     async function fetchReviewDistribution() {
       try {
         setLoading(true);
 
-        const reviews = await getReviewsUser(userId);
+        const reviews = await getReviewsUser(targetId);
 
         // contador para cada nota
-        const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+        const counts: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
 
-        // somando quantas vezes cada nota aparece
-        reviews.forEach((review: { rating: number }) => {
-          if (counts[review.rating as keyof typeof counts] !== undefined) {
-            counts[review.rating as keyof typeof counts] += 1;
+        reviews.forEach((review) => {
+          if (counts[review.rating] !== undefined) {
+            counts[review.rating] += 1;
           }
         });
 
-        const formattedRatings = [
-          { star: 5, value: counts[5] },
-          { star: 4, value: counts[4] },
-          { star: 3, value: counts[3] },
-          { star: 2, value: counts[2] },
-          { star: 1, value: counts[1] },
-        ];
-
-        setRatings(formattedRatings);
+        setRatings([5, 4, 3, 2, 1].map((star) => ({ star, value: counts[star] })));
       } catch (error) {
         console.error("Erro ao carregar distribuição de avaliações:", error);
       } finally {
@@ -84,11 +79,11 @@ export const RatingDistribution = () => {
       }
     }
 
-    fetchReviewDistribution();
-  }, [userId]);
+    void fetchReviewDistribution();
+  }, [targetId]);
 
   if (loading) {
-    return <Loading />;
+    return <Spinner color="#1F7A50" />;
   }
 
   const sumRatings = ratings.reduce((total, rate) => total + rate.value, 0);

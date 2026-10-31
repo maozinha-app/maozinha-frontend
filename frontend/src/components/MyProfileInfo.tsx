@@ -8,14 +8,76 @@ import {
   Stack,
   Button,
 } from "@chakra-ui/react";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/contexts/Auth/AuthContext";
 import { MdOutlineLocationOn } from "react-icons/md";
 import { HiStar } from "react-icons/hi";
 import { LuLogOut, LuPencil } from "react-icons/lu";
+import { interestService } from "@/services/interestService";
+import { serviceService } from "@/services/serviceService";
+import { getCurrentUser } from "@/services/userService";
+import type { User } from "@/types/User";
 
 export const MyProfileInfo = () => {
   const auth = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const [publicados, setPublicados] = useState(0);
+  const [realizados, setRealizados] = useState(0);
+
+  // A nota muda quando alguém avalia você: busca os dados atualizados ao abrir o perfil.
+  const { updateUser } = auth;
+  useEffect(() => {
+    const atualizarPerfil = async () => {
+      try {
+        const data = await getCurrentUser();
+        updateUser((data?.user ?? data) as User);
+      } catch (error) {
+        console.error("Erro ao atualizar perfil:", error);
+      }
+    };
+
+    void atualizarPerfil();
+    // Só ao abrir a tela: o updateUser muda a cada render e geraria um laço.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const carregarContadores = async () => {
+      const [meusServicos, meusInteresses] = await Promise.allSettled([
+        serviceService.getMeusServicos({ size: 1 }),
+        interestService.getMeusInteresses(),
+      ]);
+
+      if (meusServicos.status === "fulfilled") {
+        setPublicados(meusServicos.value.totalElements);
+      }
+
+      // Realizado = você foi selecionado e o serviço foi concluído.
+      if (meusInteresses.status === "fulfilled") {
+        const selecionados = meusInteresses.value.filter(
+          (interesse) => interesse.status === "SELECIONADO",
+        );
+
+        const servicos = await Promise.allSettled(
+          selecionados.map((interesse) =>
+            serviceService.getServicoPorId(interesse.jobId),
+          ),
+        );
+
+        setRealizados(
+          servicos.filter(
+            (servico) =>
+              servico.status === "fulfilled" &&
+              servico.value.status === "CONCLUIDO",
+          ).length,
+        );
+      }
+    };
+
+    void carregarContadores();
+  }, []);
 
   const month = [
     "Janeiro",
@@ -96,9 +158,15 @@ export const MyProfileInfo = () => {
           >
             <HiStar color="#E0A11A" size={16} />
             <Text fontWeight="bold" fontSize="md">
-              {auth.user?.averageRating ? auth.user?.averageRating : ""}{" "}
+              {auth.user?.averageRating
+                ? Number(auth.user.averageRating).toFixed(1).replace(".", ",")
+                : ""}
             </Text>
-            <Text fontWeight="light">{`${auth.user?.totalReviews ? auth.user?.totalReviews + "avaliações" : "sem avaliação"}`}</Text>
+            <Text fontWeight="light">
+              {auth.user?.totalReviews
+                ? `${auth.user.totalReviews} ${auth.user.totalReviews === 1 ? "avaliação" : "avaliações"}`
+                : "sem avaliação"}
+            </Text>
           </Badge>
         </Stack>
 
@@ -115,7 +183,7 @@ export const MyProfileInfo = () => {
             h={69}
           >
             <Heading size="xl" fontWeight="extrabold" lineHeight={1}>
-              {0}
+              {publicados}
             </Heading>
             <Text fontSize="xs" lineHeight={1}>
               Serviços publicados
@@ -133,7 +201,7 @@ export const MyProfileInfo = () => {
             h={69}
           >
             <Heading size="xl" fontWeight="extrabold" lineHeight={1}>
-              {0}
+              {realizados}
             </Heading>
             <Text fontSize="xs" lineHeight={1}>
               Serviços realizados
@@ -151,7 +219,7 @@ export const MyProfileInfo = () => {
         height="56px"
         background="#1F7A50"
         fontWeight="bold"
-        onClick={() => {}}
+        onClick={() => navigate("/editar-perfil")}
       >
         <LuPencil />
         Editar perfil

@@ -4,6 +4,7 @@ import type { ElementType } from "react";
 interface IIconTileProps {
   icone: ElementType;
   size?: string;
+  iconSize?: string;
   backgroundColor?: string;
   iconColor?: string;
   borderRadius?: string;
@@ -12,6 +13,7 @@ interface IIconTileProps {
 export function IconTile({
   icone: IconeElement,
   size = "48px",
+  iconSize = "24px",
   backgroundColor = "#fff",
   iconColor = "#000",
   borderRadius = "16px",
@@ -30,7 +32,7 @@ export function IconTile({
         boxShadow: "0 0 0 1px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.08)",
       })}
     >
-      <IconeElement size="24px" color={iconColor} />
+      <IconeElement size={iconSize} color={iconColor} />
     </Center>
   );
 }

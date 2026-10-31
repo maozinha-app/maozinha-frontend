@@ -1,4 +1,4 @@
-import { api } from "@/services/api";
+import { api, getApiErrorMessage } from "@/services/api";
 
 // Login: recebe e armazena os tokens.
 export const signin = async (email: string, password: string) => {
@@ -39,7 +39,7 @@ export const validateToken = async (): Promise<boolean> => {
   }
 };
 
-// Encerra a sessão local.
+// Encerra a sessão local (o backend não possui endpoint de logout).
 export const logout = (): void => {
   sessionStorage.removeItem("accessToken");
   sessionStorage.removeItem("refreshToken");
@@ -50,6 +50,29 @@ export const register = async (userData: object) => {
     const response = await api.post("/auth/register", userData);
     return response.data;
   } catch (error) {
-    throw new Error("Erro ao cadastrar usuário");
+    throw new Error(getApiErrorMessage(error, "Erro ao cadastrar usuário"));
   }
+};
+
+// Pede o e-mail de recuperação. A resposta é sempre a mesma, exista ou não o e-mail.
+export const forgotPassword = async (email: string): Promise<string> => {
+  const response = await api.post<{ message: string }>(
+    "/auth/forgot-password",
+    { email },
+  );
+
+  return response.data.message;
+};
+
+// Define a nova senha usando o token recebido por e-mail.
+export const resetPassword = async (
+  token: string,
+  newPassword: string,
+): Promise<string> => {
+  const response = await api.post<{ message: string }>("/auth/reset-password", {
+    token,
+    newPassword,
+  });
+
+  return response.data.message;
 };

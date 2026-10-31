@@ -143,7 +143,7 @@ export function CardAd({
         )}
 
         {interesseEnviado && (
-          <HStack color="#185B3E" gap={1.5} py={1.5}>
+          <HStack color="#185B3E" gap={1.5} py={1.5} ml="auto">
             <MdCheckCircleOutline size={16} />
             <Text fontSize="sm" fontWeight="semibold" lineHeight="1">
               Interesse enviado

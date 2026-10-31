@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -24,6 +25,7 @@ import { serviceService, type IServico } from "../../services/serviceService";
 type Ordenacao = "recentes" | "maior-preco" | "menor-preco" | "mais-proximo";
 
 export function BuscaServicos() {
+  const navigate = useNavigate();
   const [servicos, setServicos] = useState<IServico[]>([]);
   const [categorias, setCategorias] = useState<IServiceCategory[]>([]);
   const [busca, setBusca] = useState("");
@@ -39,11 +41,11 @@ export function BuscaServicos() {
     async function carregarDados() {
       try {
         const [listaServicos, listaCategorias] = await Promise.all([
-          serviceService.getServicos(),
+          serviceService.getServicos({ size: 100 }),
           categoryService.getCategories(),
         ]);
 
-        setServicos(listaServicos);
+        setServicos(listaServicos.content);
         setCategorias(listaCategorias);
       } catch (error) {
         console.error("Erro ao carregar a lista de serviços:", error);
@@ -59,8 +61,8 @@ export function BuscaServicos() {
       [
         ...new Set(
           servicos
-            .filter((servico) => servico.status === "disponivel")
-            .map((servico) => servico.bairro),
+            .filter((servico) => servico.status === "ABERTO")
+            .map((servico) => servico.neighborhood),
         ),
       ].sort((a, b) => a.localeCompare(b, "pt-BR")),
     [servicos],
@@ -71,25 +73,25 @@ export function BuscaServicos() {
 
     const resultado = servicos.filter((servico) => {
       const categoria = categorias.find(
-        (item) => item.id === servico.categoriaId,
+        (item) => item.id === servico.categoryId,
       );
 
       const correspondeBusca =
         !termo ||
-        servico.titulo.toLocaleLowerCase("pt-BR").includes(termo) ||
-        servico.descricao.toLocaleLowerCase("pt-BR").includes(termo) ||
-        servico.bairro.toLocaleLowerCase("pt-BR").includes(termo) ||
+        servico.title.toLocaleLowerCase("pt-BR").includes(termo) ||
+        servico.description.toLocaleLowerCase("pt-BR").includes(termo) ||
+        servico.neighborhood.toLocaleLowerCase("pt-BR").includes(termo) ||
         categoria?.name.toLocaleLowerCase("pt-BR").includes(termo);
 
       const correspondeCategoria =
         categoriaSelecionada === null ||
-        servico.categoriaId === categoriaSelecionada;
+        servico.categoryId === categoriaSelecionada;
 
       const correspondeBairro =
-        !bairroSelecionado || servico.bairro === bairroSelecionado;
+        !bairroSelecionado || servico.neighborhood === bairroSelecionado;
 
       return (
-        servico.status === "disponivel" &&
+        servico.status === "ABERTO" &&
         correspondeBusca &&
         correspondeCategoria &&
         correspondeBairro
@@ -98,16 +100,13 @@ export function BuscaServicos() {
 
     return resultado.sort((a, b) => {
       if (ordenacao === "menor-preco") {
-        return a.valor - b.valor;
+        return a.value - b.value;
       }
       if (ordenacao === "maior-preco") {
-        return b.valor - a.valor;
+        return b.value - a.value;
       }
 
-      return (
-        new Date(b.dataServicoPostado).getTime() -
-        new Date(a.dataServicoPostado).getTime()
-      );
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
   }, [
     servicos,
@@ -319,15 +318,16 @@ export function BuscaServicos() {
             {servicosFiltrados.map((servico) => (
               <CardAd
                 key={servico.id}
-                titulo={servico.titulo}
-                valor={servico.valor}
-                data={servico.dataServicoPostado}
-                bairro={servico.bairro}
-                cidade={servico.cidade}
+                titulo={servico.title}
+                valor={servico.value}
+                data={servico.serviceDate}
+                bairro={servico.neighborhood}
+                cidade={servico.city}
                 categoria={categorias.find(
-                  (item) => item.id === servico.categoriaId,
+                  (item) => item.id === servico.categoryId,
                 )}
-                nomeUsuario={servico.nomeUsuario}
+                nomeUsuario={servico.requesterName}
+                onClick={() => navigate(`/detalhe-servico/${servico.id}`)}
               />
             ))}
           </SimpleGrid>

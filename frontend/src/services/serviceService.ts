@@ -1,17 +1,35 @@
 import { api } from "./api";
+import type { PageResponse } from "@/types/Api";
+
+export type StatusServico =
+  | "ABERTO"
+  | "SELECIONADO"
+  | "EM_ANDAMENTO"
+  | "CONCLUIDO"
+  | "CANCELADO";
+
+// Serviço como a API devolve (JobResponse)
 export interface IServico {
-    id: string;
-    titulo: string;
-    descricao: string;
-    categoriaId: number;
-    valor: number;
-    cidade: string;
-    bairro: string;
-    dataServicoPostado: string;
-    status: "disponivel" | "em_andamento" | "concluido" | "cancelado";
-    usuarioId: string;
-    nomeUsuario: string;
+  id: number;
+  title: string;
+  description: string;
+  value: number;
+  /** Data marcada para o serviço: "YYYY-MM-DD" */
+  serviceDate: string;
+  city: string;
+  neighborhood: string;
+  status: StatusServico;
+  requesterId: number;
+  requesterName: string;
+  categoryId: number;
+  categoryName: string;
+  hiddenByModeration: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
+
+// Mesmo formato do IServico (nome mantido porque DetalhesServico já usa)
+export type IServicoDetalhes = IServico;
 
 export interface ICriarServico {
   title: string;
@@ -23,85 +41,78 @@ export interface ICriarServico {
   serviceDate: string;
 }
 
-export interface IServicoDetalhes {
-  id: number;
-  title: string;
-  description: string;
-  categoryId: number;
-  value: number;
-  city: string;
-  neighborhood: string;
-  serviceDate: string;
-  status: "EM ABERTO" | "SELECIONADO" | "EM ANDAMENTO" | "CONCLUÍDO" | "CANCELADO";
-  requesterId: number;
-  requesterName: string;
-  categoryName: string;
-  createdAt: string;
-  updatedAt: string;
+export interface IAtualizarServico extends ICriarServico {
+  status: StatusServico;
 }
 
-export interface IAtualizarServico {
-  
+export interface IListarServicosParams {
+  /** Começa em 0 */
+  page?: number;
+  size?: number;
+  /** Só serviços abertos deste usuário */
+  requesterId?: number;
 }
-
-//export interface ICancelarServico {}
-
-// Simulação de dados de serviços para teste da listagem na forma inicial
-let servicos: IServico[] = [
-    {
-    id: "1",
-    titulo: "Montagem de guarda-roupa",
-    descricao: "Preciso de ajuda para montar um guarda-roupa de duas portas.",
-    categoriaId: 1,
-    valor: 120,
-    bairro: "Cohama",
-    cidade: "São Luís",
-    dataServicoPostado: "2026-10-25",
-    status: "disponivel",
-    usuarioId: "usuario-1",
-    nomeUsuario: "Ana Paula",
-  },
-  {
-    id: "2",
-    titulo: "Configuração de notebook",
-    descricao: "Preciso configurar meu notebook e instalar os programas básicos.",
-    categoriaId: 2,
-    valor: 80,
-    bairro: "Renascença",
-    cidade: "São Luís",
-    dataServicoPostado: "2026-10-22",
-    status: "disponivel",
-    usuarioId: "usuario-2",
-    nomeUsuario: "Carlos Mendes",
-  },
-  {
-    id: "3",
-    titulo: "Limpeza de quintal",
-    descricao: "Procuro alguém para limpar um quintal pequeno e retirar folhas.",
-    categoriaId: 4,
-    valor: 100,
-    bairro: "Turu",
-    cidade: "São Luís",
-    dataServicoPostado: "2026-10-28",
-    status: "disponivel",
-    usuarioId: "usuario-3",
-    nomeUsuario: "Mariana Costa",
-  },
-];
 
 export const serviceService = {
-    getServicos: async (): Promise<IServico[]> => {
-        return servicos;
-    },
-    
-    createServico: async (dados: ICriarServico) => {
-      //console.log("Dados enviados:", dados); DEBUG
-      const response = await api.post("/services", dados);
-      return response.data;
-    },
+  // Lista só serviços ABERTOS e não ocultados pela moderação.
+  getServicos: async ({
+    page = 0,
+    size = 10,
+    requesterId,
+  }: IListarServicosParams = {}): Promise<PageResponse<IServico>> => {
+    const response = await api.get<PageResponse<IServico>>("/services", {
+      params: { page, size, ...(requesterId !== undefined && { requesterId }) },
+    });
+    return response.data;
+  },
 
-    getServicoPorId: async (id: number): Promise<IServicoDetalhes> => {
-      const response = await api.get<IServicoDetalhes>(`/services/${id}`);
-      return response.data;
-    },
-}
+  // Serviços publicados por mim, em qualquer status.
+  getMeusServicos: async ({
+    page = 0,
+    size = 100,
+  }: IListarServicosParams = {}): Promise<PageResponse<IServico>> => {
+    const response = await api.get<PageResponse<IServico>>(
+      "/users/me/services",
+      { params: { page, size } },
+    );
+    return response.data;
+  },
+
+  createServico: async (dados: ICriarServico): Promise<IServico> => {
+    const response = await api.post<IServico>("/services", dados);
+    return response.data;
+  },
+
+  getServicoPorId: async (id: number): Promise<IServico> => {
+    const response = await api.get<IServico>(`/services/${id}`);
+    return response.data;
+  },
+
+  // Só o solicitante pode editar. A API exige TODOS os campos (PUT completo).
+  atualizarServico: async (
+    id: number,
+    dados: IAtualizarServico,
+  ): Promise<IServico> => {
+    const response = await api.put<IServico>(`/services/${id}`, dados);
+    return response.data;
+  },
+
+  // Troca só o status (PATCH /services/{id}/status).
+  // Aceita EM_ANDAMENTO, CONCLUIDO ou CANCELADO, seguindo a máquina de estados.
+  atualizarStatus: async (
+    servico: Pick<IServico, "id">,
+    status: StatusServico,
+  ): Promise<IServico> => {
+    const response = await api.patch<IServico>(
+      `/services/${servico.id}/status`,
+      { status },
+    );
+
+    return response.data;
+  },
+
+  // Não apaga: muda o status para CANCELADO.
+  cancelarServico: async (id: number): Promise<void> => {
+    await api.delete(`/services/${id}`);
+  },
+};

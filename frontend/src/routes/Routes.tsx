@@ -19,7 +19,7 @@ import { MeusServicos } from "../pages/Publicacao/MeusServicos";
 import { ServicoCancelado } from "../pages/Publicacao/ServicoCancelado";
 import { SelecaoInteressados } from "../pages/Publicacao/SelecaoInteressados";
 import { AvaliarUsuario } from "../pages/Avaliacao/AvaliarUsuario";
-import { Reputacao } from "../pages/Avaliacao/Reputação";
+import { Reputacao } from "../pages/Avaliacao/Reputacao";
 import { AvaliacaoRealizada } from "../pages/Avaliacao/AvaliacaoRealizada";
 
 import { ProtectedLayout } from "@/layouts/ProtectedLayout";
@@ -45,38 +45,47 @@ export function AppRoutes() {
           {/*Perfil*/}
           <Route path="/meu-perfil" element={<MeuPerfil />} />
           <Route path="/editar-perfil" element={<EditarPerfil />} />
-          <Route path="/perfil" element={<PerfilPublicoUsuario />} />
+          <Route path="/perfil/:id" element={<PerfilPublicoUsuario />} />
 
           {/*Execução*/}
           <Route
-            path="/servico-concluido-perfil"
+            path="/servico-concluido-perfil/:id?"
             element={<ServicoConcluido />}
           />
           <Route
-            path="/servico-em-andamento"
+            path="/servico-em-andamento/:id?"
             element={<ServicoEmAndamento />}
           />
-          <Route path="/servico-selecionado" element={<ServicoSelecionado />} />
+          <Route
+            path="/servico-selecionado/:id?"
+            element={<ServicoSelecionado />}
+          />
 
           {/*Publicação*/}
           <Route path="/criar" element={<CriarServico />} />
-          <Route path="/editar-servico" element={<EditarServico />} />
+          <Route path="/editar-servico/:id?" element={<EditarServico />} />
           <Route
-            path="gerenciar-servico-publicado"
+            path="gerenciar-servico-publicado/:id?"
             element={<GerenciarServicoPublicado />}
           />
-          <Route path="lista-interessados" element={<ListaInteressados />} />
+          <Route
+            path="lista-interessados/:id?"
+            element={<ListaInteressados />}
+          />
           <Route path="meus-servicos" element={<MeusServicos />} />
           <Route
-            path="selecao-interessados"
+            path="selecao-interessados/:id?"
             element={<SelecaoInteressados />}
           />
-          <Route path="servico-cancelado" element={<ServicoCancelado />} />
+          <Route path="servico-cancelado/:id?" element={<ServicoCancelado />} />
 
           {/*Avaliação*/}
-          <Route path="/avaliar-usuario" element={<AvaliarUsuario />} />
-          <Route path="/avaliacao-realizada" element={<AvaliacaoRealizada />} />
-          <Route path="/reputacao" element={<Reputacao />} />
+          <Route path="/avaliar-usuario/:id?" element={<AvaliarUsuario />} />
+          <Route
+            path="/avaliacao-realizada/:id?"
+            element={<AvaliacaoRealizada />}
+          />
+          <Route path="/reputacao/:id?" element={<Reputacao />} />
 
           {/*Administração*/}
         </Route>

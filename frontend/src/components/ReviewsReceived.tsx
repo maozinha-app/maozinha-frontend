@@ -1,47 +1,40 @@
 import { AuthContext } from "@/contexts/Auth/AuthContext";
-import { getReviewsUser } from "@/services/reviewService";
-import type { User } from "@/types/User";
+import { getReviewsUser, type IAvaliacao } from "@/services/reviewService";
 import {
+  Avatar,
+  Box,
+  Flex,
   Heading,
   HStack,
-  Flex,
-  VStack,
-  Text,
   RatingGroup,
-  Separator,
-  Avatar,
+  Text,
+  VStack,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
-import { Loading } from "./Loading";
 import { LuStarOff } from "react-icons/lu";
 
 interface IReviewsReceivedProps {
   title: string;
+  /** Usuário avaliado. Sem isso, usa o usuário logado. */
+  userId?: number;
 }
 
-interface Review {
-  id: number;
-  reviewerName: User;
-  rating: number;
-  reviwed: User;
-  dateReview: Date;
-  comment: string;
-}
+const CORES_AVATAR = ["#D6E6F8", "#F6E3B8", "#E0D8F2", "#E6E2D5", "#F8D7E3"];
 
-export const ReviewsReceived = ({ title }: IReviewsReceivedProps) => {
+export const ReviewsReceived = ({ title, userId }: IReviewsReceivedProps) => {
   const auth = useContext(AuthContext);
-  const userId = Number(auth.user?.id);
+  const targetId = userId ?? Number(auth.user?.id);
 
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<IAvaliacao[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!targetId) return;
 
     async function fetchReview() {
       try {
         setLoading(true);
-        const data = await getReviewsUser(userId);
+        const data = await getReviewsUser(targetId);
         setReviews(data);
       } catch (error) {
         console.error("Erro ao buscar avaliações:", error);
@@ -49,117 +42,94 @@ export const ReviewsReceived = ({ title }: IReviewsReceivedProps) => {
         setLoading(false);
       }
     }
-    fetchReview();
-  }, [userId]);
 
-  if (loading) {
-    return <Loading />;
-  }
-
-  if (reviews.length === 0) {
-    return (
-      <Flex
-        flex={1}
-        boxSize={100}
-        bg="#fff"
-        w="full"
-        rounded={28}
-        h={90}
-        p={6}
-        align="space-between"
-        justify="center"
-        direction="column"
-        gap={3}
-      >
-        <HStack justify="space-between" w="full">
-          <Heading as="h3" size="md" fontWeight="bold">
-            {title}
-          </Heading>
-        </HStack>
-        <VStack textAlign="center" fontWeight="medium">
-          <LuStarOff />
-          Sem avaliações ainda.
-        </VStack>
-      </Flex>
-    );
-  }
+    void fetchReview();
+  }, [targetId]);
 
   return (
     <Flex
       flex={1}
-      boxSize={100}
       bg="#fff"
       w="full"
       rounded={28}
-      h={90}
       p={6}
-      align="space-between"
       justify="center"
       direction="column"
       gap={3}
     >
-      <HStack justify="space-between" w="full">
-        <Heading as="h3" size="md" fontWeight="bold">
-          {title}
-        </Heading>
-      </HStack>
+      <Heading as="h3" size="md" fontWeight="bold">
+        {title}
+      </Heading>
 
-      <Separator />
+      {loading && (
+        <Text fontSize="sm" color="#58665D">
+          Carregando...
+        </Text>
+      )}
 
-      <HStack w="full" justify="flex-start" gap={3} align="flex-start">
-        <Avatar.Root
-          shape="rounded"
-          size="md"
-          outlineColor="#fff"
-          outlineStyle="solid"
-          rounded="10px"
-          outlineWidth="2px"
-          background="#F6D8C5"
-          boxSize="34px"
-          boxShadow="lg"
-        >
-          <Avatar.Fallback
-            name={auth.user?.name}
-            fontWeight="bold"
-            fontSize="12px"
-          />
-          <Avatar.Image src="" />
-        </Avatar.Root>
+      {!loading && reviews.length === 0 && (
+        <VStack textAlign="center" fontWeight="medium" py={4}>
+          <LuStarOff />
+          Sem avaliações ainda.
+        </VStack>
+      )}
 
-        {reviews.map((review) => (
-          <VStack
-            justify="space-between"
-            align="space-between"
-            gap={1}
+      {!loading &&
+        reviews.map((review, index) => (
+          <HStack
+            key={review.id}
             w="full"
+            gap={3}
+            align="flex-start"
+            pt={3}
+            borderTopWidth="1px"
+            borderColor="#EEF1EE"
           >
-            <HStack justify="space-between" gap={3}>
-              <Heading size="xs" fontWeight="extrabold">
-                {review.reviewerName.name}
-              </Heading>
-              <Text fontSize={10}>
-                {new Date(review.dateReview).toLocaleDateString("pt-BR")}
-              </Text>
-            </HStack>
-
-            <RatingGroup.Root
-              count={5}
-              readOnly
-              defaultValue={review.rating}
-              size="xs"
-              disabled
-              colorPalette="orange"
+            <Avatar.Root
+              shape="rounded"
+              rounded="10px"
+              boxSize="40px"
+              flexShrink={0}
+              background={CORES_AVATAR[index % CORES_AVATAR.length]}
             >
-              <RatingGroup.Control />
-              <RatingGroup.HiddenInput />
-            </RatingGroup.Root>
+              <Avatar.Fallback
+                name={review.reviewerName}
+                fontWeight="bold"
+                fontSize="12px"
+              />
+            </Avatar.Root>
 
-            <Text fontSize={10} fontWeight="light">
-              {review.comment}
-            </Text>
-          </VStack>
+            <VStack align="stretch" gap={1} flex="1" minW={0}>
+              <HStack justify="space-between" gap={3}>
+                <Heading size="xs" fontWeight="extrabold">
+                  {review.reviewerName}
+                </Heading>
+                <Text fontSize={11} color="#58665D">
+                  {new Date(review.reviewDate).toLocaleDateString("pt-BR")}
+                </Text>
+              </HStack>
+
+              <RatingGroup.Root
+                count={5}
+                readOnly
+                defaultValue={review.rating}
+                size="xs"
+                colorPalette="orange"
+              >
+                <RatingGroup.Control />
+                <RatingGroup.HiddenInput />
+              </RatingGroup.Root>
+
+              {review.comment && (
+                <Box>
+                  <Text fontSize="sm" color="#202722">
+                    {review.comment}
+                  </Text>
+                </Box>
+              )}
+            </VStack>
+          </HStack>
         ))}
-      </HStack>
     </Flex>
   );
 };
