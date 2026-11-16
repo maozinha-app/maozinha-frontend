@@ -25,7 +25,7 @@ import { BackButton } from "@/components/BackButton";
 import { AuthContext } from "@/contexts/Auth/AuthContext";
 import { getApiErrorMessage } from "@/services/api";
 import { buscarLocalPorCep } from "@/services/cepService";
-import { skillService, type ISkill } from "@/services/SkillService";
+import { skillService, type ISkill } from "@/services/skillService";
 import { updateMyProfile } from "@/services/userService";
 import type { User } from "@/types/User";
 
