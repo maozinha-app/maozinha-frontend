@@ -1,0 +1,16 @@
+node_modules/
+dist/
+dist-ssr/
+.git/
+.vscode/
+.idea/
+*.log
+.DS_Store
+
+# O .env local aponta para localhost:8080; no Docker a URL vem do build arg VITE_API_URL
+.env
+.env.*
+*.local
+
+Dockerfile
+.dockerignore
